@@ -249,6 +249,7 @@ module emu (
 
     wire [15:0] JOY0  /*verilator public_flat_rw*/;
     wire [15:0] JOY0_ANALOG  /*verilator public_flat_rw*/;
+    wire [24:0] MOUSE  /*verilator public_flat_rw*/;
 
     wire        ioctl_download  /*verilator public_flat_rw*/;
     wire        ioctl_wr  /*verilator public_flat_rw*/;
@@ -311,6 +312,8 @@ module emu (
         .img_size(img_size),
 
         .ps2_key(ps2_key),
+
+        .ps2_mouse(MOUSE),
 
         .joystick_l_analog_0(JOY0_ANALOG),
         .joystick_0(JOY0)
@@ -589,6 +592,7 @@ module emu (
         .clk(clk_sys),
         .mister_joystick(JOY0),
         .mister_joystick_analog(JOY0_ANALOG),
+        .mister_mouse(MOUSE),
         .rts(slave_rts),
         .serial_out(slave_serial_in),
         .overclock(overclock_maneuvering_device)

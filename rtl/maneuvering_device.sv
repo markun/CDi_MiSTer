@@ -2,6 +2,7 @@ module maneuvering_device (
     input clk,
     input wire [15:0] mister_joystick,
     input wire [15:0] mister_joystick_analog,
+    input wire [24:0] mister_mouse,
     input rts,
     input overclock,
     bytestream.source serial_out
@@ -29,8 +30,11 @@ module maneuvering_device (
 
     bit perform_transmit;
 
-    wire b1 = mister_joystick[5];
-    wire b2 = mister_joystick[4];
+    //wire b1 = mister_joystick[5];
+    //wire b2 = mister_joystick[4];
+
+    wire b1 = mister_mouse[0];
+    wire b2 = mister_mouse[1];
 
     bit b1_q, b2_q;
 
@@ -45,6 +49,15 @@ module maneuvering_device (
     bit signed [7:0] x_q;
     bit signed [7:0] y_q;
     bit [3:0] accel;
+
+    bit mouse_event_prev;
+    wire mouse_event = mister_mouse[24];
+
+    bit signed [8:0] mouse_x;
+    bit signed [8:0] mouse_y;
+
+    wire mouse_button_left = mister_mouse[0];
+    wire mouse_button_right = mister_mouse[1];
 
     always_comb begin
         x = 0;
@@ -71,9 +84,16 @@ module maneuvering_device (
         if (x_analog != 0) x = x_analog;
         if (y_analog != 0) y = y_analog;
 
+        mouse_x = {mister_mouse[4],mister_mouse[15:8]};
+        mouse_y = -{mister_mouse[5],mister_mouse[23:16]};
+
+        // FIXME: mouse speed should be accumulated, not directly set
+        x = mouse_x;
+        y = mouse_y;
+
         // Only transmit when buttons have changed or when we are moving the cursor
         // Even so, the speed is not changed, we must transmit permanently.
-        perform_transmit = (b1 != b1_q) || (b2 != b2_q) || (x != x_q) || (y != y_q) || (x !=0 ) || (y !=0 );
+        perform_transmit = (b1 != b1_q) || (b2 != b2_q) || (x != x_q) || (y != y_q) || (mouse_event != mouse_event_prev);
     end
 
     always_ff @(posedge clk) begin
@@ -92,7 +112,8 @@ module maneuvering_device (
 
             case (state)
                 DEVICE_ID: begin
-                    serial_out.data <= 8'hCA;
+                    //serial_out.data <= 8'hCA; // maneuvering
+                    serial_out.data <= 8'hCD; // relative
                     state <= BYTE0;
                     serial_out.write <= 1;
 
@@ -108,6 +129,7 @@ module maneuvering_device (
                         y_q <= y;
                         b1_q <= b1;
                         b2_q <= b2;
+                        mouse_event_prev <= mouse_event;
                     end
                 end
                 BYTE1: begin
