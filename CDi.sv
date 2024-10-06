@@ -594,7 +594,7 @@ module emu (
 `ifdef VERILATOR
     bit debug_uart_fake_space  /*verilator public_flat_rw*/;
     bit tvmode_ntsc  /*verilator public_flat_rw*/;
-    wire overclock_maneuvering_device = 1;
+    wire overclock_pointing_device = 1;
     wire [1:0] debug_force_video_plane = 0;
 `else
     // Status seems to be all zero after reset
@@ -602,7 +602,7 @@ module emu (
     wire debug_uart_fake_space = status[3];
     wire [1:0] debug_force_video_plane = status[7:6];
     wire tvmode_ntsc = status[4];
-    wire overclock_maneuvering_device = status[5];
+    wire overclock_pointing_device = status[5];
 `endif
 
     wire HBlank;
@@ -618,12 +618,12 @@ module emu (
     bytestream slave_serial_in ();
     wire slave_rts;
 
-    maneuvering_device spoon (
+    pointing_device spoon (
         .clk(clk_sys),
         .mister_joystick(JOY0),
         .rts(slave_rts),
         .serial_out(slave_serial_in),
-        .overclock(overclock_maneuvering_device)
+        .overclock(overclock_pointing_device)
     );
 
     wire fail_not_enough_words;
